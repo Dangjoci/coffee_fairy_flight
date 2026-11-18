@@ -44,8 +44,8 @@
   @keyframes pow{0%{opacity:1;transform:scale(.3) rotate(-14deg)}18%{opacity:1;transform:scale(1.25) rotate(-7deg)}
     35%{transform:scale(1) rotate(-7deg)}75%{opacity:1;transform:scale(1) rotate(-7deg)}100%{opacity:0;transform:scale(1.1) rotate(-7deg)}}
   @media (prefers-reduced-motion:reduce){#pow.go{animation-duration:.01s}}
-  #start{position:absolute;inset:0;background:rgba(26,20,32,.82);display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;padding:24px;gap:14px}
+  #start{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(rgba(26,20,32,0),rgba(26,20,32,.88) 30%);display:flex;flex-direction:column;
+    align-items:center;justify-content:flex-end;padding-top:70px!important;text-align:center;padding:24px;gap:14px}
   #start h1{margin:0;font-size:30px;letter-spacing:.2em;color:#f7c9a0}
   #start p{margin:0;font-size:13px;line-height:1.7;opacity:.9;max-width:30em}
   #go{font:inherit;font-size:15px;padding:12px 26px;background:#f7c9a0;color:#1a1420;border:0;letter-spacing:.15em}
@@ -79,7 +79,7 @@
   </div>
   <div id="start">
     <h1>향기 순찰</h1>
-    <p>커피요정이 노을 진 바다와 산 위를 날아요.<br>무궁화를 모으고, 졸음 구름은 원두펀치로 깨우세요.</p>
+    <p>커피향을 전하는 작고 통통한 요정이에요!<br>무궁화를 모으고, 졸음 구름은 원두펀치로 깨우세요.</p>
     <p id="how"></p>
     <button id="go">날아오르기</button>
   </div>
@@ -275,26 +275,28 @@ var i;
   }
 })();
 
-/* ---------- 커피요정 ---------- */
+/* ---------- 커피요정 (캐릭터 시트 기준) ---------- */
 function toon(c){return new THREE.MeshToonMaterial({color:c});}
-var M={skin:toon(0xf9d2ac),shorts:toon(0x5e3d29),ribbon:toon(0x9a7448),white:toon(0xfffaf2),coffee:toon(0x3a2418),
-  pink:toon(0xee5fa0),pinkL:toon(0xf8a0c4),pinkD:toon(0xc93a7c),yellow:toon(0xf6d24a),leaf:toon(0x4f8a4a),dark:toon(0x3a2418),
-  blush:toon(0xf7a0a0),bean:toon(0x6a4028),beanD:toon(0x3a2418),sleepy:toon(0x7a7198),sleepyD:toon(0x5d5580),
-  line:new THREE.MeshBasicMaterial({color:0x3a2418,side:THREE.BackSide}),
-  wing:new THREE.MeshBasicMaterial({color:0xfff3dc,transparent:true,opacity:0.6,side:THREE.DoubleSide,depthWrite:false}),
-  wingEdge:new THREE.MeshBasicMaterial({color:0xd9a860,side:THREE.DoubleSide})};
-var sph=new THREE.SphereGeometry(1,20,14),sphLo=new THREE.SphereGeometry(1,10,8);
+var M={skin:toon(0xf6cda6),shorts:toon(0x4f3424),ribbon:toon(0xa57a4c),white:toon(0xfffaf2),coffee:toon(0x3a2418),
+  pink:toon(0xee5c9c),pinkL:toon(0xf7a3c6),pinkD:toon(0xb8306c),yellow:toon(0xf3cf4a),leaf:toon(0x4b8a3e),dark:toon(0x3b2619),
+  blush:new THREE.MeshBasicMaterial({color:0xf5a0a0}),nip:new THREE.MeshBasicMaterial({color:0xee9c9c}),
+  hi:new THREE.MeshBasicMaterial({color:0xffffff}),
+  bean:toon(0x6a4028),beanD:toon(0x3a2418),sleepy:toon(0x7a7198),sleepyD:toon(0x5d5580),
+  line:new THREE.MeshBasicMaterial({color:0x3b2619,side:THREE.BackSide}),
+  wing:new THREE.MeshBasicMaterial({color:0xfff6e6,transparent:true,opacity:0.5,side:THREE.DoubleSide,depthWrite:false}),
+  wingLine:new THREE.LineBasicMaterial({color:0xb98549}),
+  steam:new THREE.MeshBasicMaterial({color:0xc4a688})};
+var sph=new THREE.SphereGeometry(1,24,16),sphLo=new THREE.SphereGeometry(1,10,8);
 function outl(m,k){var o=new THREE.Mesh(m.geometry,M.line);o.scale.set(k,k,k);m.add(o);return m;}
 function ball(mat,x,y,z,sx,sy,sz,parent,ol){var m=new THREE.Mesh(sph,mat);m.position.set(x,y,z);
   m.scale.set(sx,sy===undefined?sx:sy,sz===undefined?sx:sz);parent.add(m);if(ol)outl(m,ol);return m;}
 function makeFlower(parent,x,y,z,s,leaves){
   var g=new THREE.Group();g.position.set(x,y,z);g.scale.set(s,s,s);
-  if(leaves){var L=[[-1.0,-0.55,0.5],[0.25,-1.1,-0.6],[-0.55,1.0,2.2],[0.95,0.6,1.0]];
-    for(var k=0;k<L.length;k++){var lf=ball(M.leaf,L[k][0],L[k][1],-0.2,0.62,0.3,0.1,g,1.12);lf.rotation.z=L[k][2];}}
-  for(var i=0;i<5;i++){var a=i/5*Math.PI*2+0.3,pt=ball(i%2?M.pink:M.pinkL,Math.cos(a)*0.6,Math.sin(a)*0.6,0,0.56,0.46,0.14,g,1.1);pt.rotation.z=a;}
+  if(leaves){var L=[[-1.0,-0.5,0.5],[0.3,-1.05,-0.7],[-0.6,0.95,2.2],[0.95,0.55,1.0]];
+    for(var k=0;k<L.length;k++){var lf=ball(M.leaf,L[k][0],L[k][1],-0.25,0.62,0.3,0.1,g,1.12);lf.rotation.z=L[k][2];}}
+  for(var i=0;i<5;i++){var a=i/5*Math.PI*2+0.3,pt=ball(i%2?M.pink:M.pinkL,Math.cos(a)*0.58,Math.sin(a)*0.58,0,0.58,0.48,0.14,g,1.1);pt.rotation.z=a;}
   ball(M.pinkD,0,0,0.1,0.3,0.3,0.1,g);
-  var st=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.08,0.5,6),M.yellow);st.rotation.x=Math.PI/2;st.position.z=0.3;g.add(st);
-  ball(M.yellow,0,0,0.55,0.13,0.13,0.13,g);
+  ball(M.yellow,0,0,0.3,0.12,0.12,0.12,g);
   parent.add(g);return g;
 }
 function makeBean(parent,s){var g=new THREE.Group();
@@ -307,64 +309,110 @@ function makeBeanLo(parent,s){var g=new THREE.Group();
   g.scale.set(s,s,s);parent.add(g);return g;}
 
 var fairy=new THREE.Group();fairy.rotation.order='YXZ';scene.add(fairy);
-var body=new THREE.Group();fairy.add(body);body.scale.set(3.3,3.3,3.3);body.rotation.x=-0.75;
-ball(M.skin,0,0,0,1.12,1.0,1.0,body,1.045);             // 몸통
-ball(M.skin,0,1.02,0,1.0,0.95,0.95,body,1.05);          // 머리
-(function(){var g=new THREE.SphereGeometry(1,20,10,0,Math.PI*2,Math.PI*0.6,Math.PI*0.4);
-  var m=new THREE.Mesh(g,M.shorts);m.scale.set(1.17,1.05,1.05);body.add(m);
-  var band=new THREE.Mesh(new THREE.TorusGeometry(1.085,0.05,6,24),M.dark);band.rotation.x=Math.PI/2;band.position.y=-0.325;band.scale.set(1.03,1,0.93);body.add(band);
-  ball(M.ribbon,-0.13,-0.42,-1.0,0.11,0.08,0.05,body);ball(M.ribbon,0.13,-0.42,-1.0,0.11,0.08,0.05,body); // 리본
-  ball(M.ribbon,-0.07,-0.58,-0.97,0.035,0.12,0.03,body);ball(M.ribbon,0.07,-0.58,-0.97,0.035,0.12,0.03,body);
-})();
-ball(M.skin,-0.44,-1.02,-0.05,0.3,0.22,0.36,body,1.14);ball(M.skin,0.44,-1.02,-0.05,0.3,0.22,0.36,body,1.14); // 발
-var armL=ball(M.skin,-1.12,0.05,-0.15,0.25,0.38,0.25,body,1.16),armR=ball(M.skin,1.12,0.05,-0.15,0.25,0.38,0.25,body,1.16);
-ball(M.blush,-0.42,0.28,-0.89,0.045,0.045,0.03,body);ball(M.blush,0.42,0.28,-0.89,0.045,0.045,0.03,body);
-// 얼굴 (앞 = -Z)
+var body=new THREE.Group();fairy.add(body);
+// 비율: 2.5~3등신 — 큰 머리, 통통한 배
+var HEAD={y:1.24,rx:1.07,ry:0.99,rz:0.99},BODY={y:0,rx:1.17,ry:1.02,rz:1.0};
+function surf(E,x,y,out,back){
+  var u=x/E.rx,v=y/E.ry,w=Math.sqrt(Math.max(0,1-u*u-v*v)),sd=back?1:-1;
+  var p=new THREE.Vector3(x,E.y+y,sd*E.rz*w),n=new THREE.Vector3(u/E.rx,v/E.ry,sd*w/E.rz).normalize();
+  p.addScaledVector(n,out||0);return {p:p,n:n};
+}
+function stick(mesh,E,x,y,out,parent,back){var s=surf(E,x,y,out,back);(parent||body).add(mesh);
+  mesh.position.copy(s.p);mesh.lookAt(s.p.clone().add(s.n));return mesh;}
+function flat(mat,sx,sy,sz){var m=new THREE.Mesh(sph,mat);m.scale.set(sx,sy,sz);return m;}
+
+ball(M.skin,0,BODY.y,0,BODY.rx,BODY.ry,BODY.rz,body,1.035);           // 배
+ball(M.skin,0,HEAD.y,0,HEAD.rx,HEAD.ry,HEAD.rz,body,1.035);           // 머리
+// 갈색 반바지 + 허리 리본
 (function(){
-  var eg=new THREE.TorusGeometry(0.11,0.028,5,10,Math.PI),bg=new THREE.TorusGeometry(0.1,0.022,4,8,Math.PI*0.7);
-  [-1,1].forEach(function(sd){
-    var e=new THREE.Mesh(eg,M.dark);e.position.set(sd*0.38,1.1,-0.87);e.rotation.y=sd*-0.4;body.add(e);      // 웃는 눈
-    var b=new THREE.Mesh(bg,M.dark);b.position.set(sd*0.4,1.36,-0.8);b.rotation.set(0.3,sd*-0.4,0.26);body.add(b); // 눈썹
-    ball(M.blush,sd*0.62,0.9,-0.72,0.17,0.11,0.05,body);                                                   // 볼
-    var mu=ball(M.dark,sd*0.15,0.86,-0.94,0.17,0.055,0.06,body);mu.rotation.z=sd*0.35;                      // 콧수염
-    ball(M.dark,sd*0.3,0.92,-0.9,0.05,0.05,0.04,body);
+  var g=new THREE.SphereGeometry(1,24,12,0,Math.PI*2,Math.PI*0.57,Math.PI*0.43);
+  var m=new THREE.Mesh(g,M.shorts);m.scale.set(BODY.rx*1.035,BODY.ry*1.035,BODY.rz*1.035);body.add(m);
+  var o=new THREE.Mesh(g,M.line);o.scale.set(1.025,1.025,1.025);m.add(o);
+  var band=new THREE.Mesh(new THREE.TorusGeometry(1,0.035,5,32),M.dark);band.rotation.x=Math.PI/2;
+  band.scale.set(BODY.rx*1.02,BODY.rz*1.02,1);band.position.y=-0.22;body.add(band);
+  [false,true].forEach(function(back){
+    var bow=new THREE.Group();
+    var lg=new THREE.TorusGeometry(0.075,0.022,5,10);
+    var l1=new THREE.Mesh(lg,M.ribbon);l1.position.set(-0.08,0.01,0);l1.scale.set(1.2,0.8,1);bow.add(l1);
+    var l2=new THREE.Mesh(lg,M.ribbon);l2.position.set(0.08,0.01,0);l2.scale.set(1.2,0.8,1);bow.add(l2);
+    var tg=new THREE.CylinderGeometry(0.018,0.018,0.2,5);
+    var t1=new THREE.Mesh(tg,M.ribbon);t1.position.set(-0.04,-0.1,0);t1.rotation.z=-0.35;bow.add(t1);
+    var t2=new THREE.Mesh(tg,M.ribbon);t2.position.set(0.04,-0.1,0);t2.rotation.z=0.35;bow.add(t2);
+    stick(bow,BODY,0,-0.3,0.05,body,back);
   });
-  ball(M.blush,0,0.94,-0.97,0.05,0.04,0.04,body);                                                          // 코
-  var b1=new THREE.Mesh(new THREE.ConeGeometry(0.2,0.95,7),M.dark);b1.rotation.x=Math.PI-0.12;b1.position.set(0,0.36,-1.04);body.add(b1); // 턱수염
-  ball(M.dark,0,0.78,-0.97,0.2,0.1,0.08,body);
 })();
-// 커피잔
+ball(M.skin,-0.42,-1.0,-0.12,0.32,0.2,0.4,body,1.12);ball(M.skin,0.42,-1.0,-0.12,0.32,0.2,0.4,body,1.12); // 발
+var armL=ball(M.skin,-1.1,0.1,-0.05,0.24,0.42,0.26,body,1.13),armR=ball(M.skin,1.1,0.1,-0.05,0.24,0.42,0.26,body,1.13);
+armL.rotation.z=-0.28;armR.rotation.z=0.28;
+stick(flat(M.nip,0.055,0.055,0.02),BODY,-0.44,0.42,0.005);stick(flat(M.nip,0.055,0.055,0.02),BODY,0.44,0.42,0.005);
+
+// 얼굴 — 기본(웃는 눈) / 놀람(동그란 눈) 두 벌
+var faceSmile=new THREE.Group(),faceWow=new THREE.Group();body.add(faceSmile);body.add(faceWow);faceWow.visible=false;
+var eyeArc=new THREE.TorusGeometry(0.13,0.03,5,12,Math.PI);
+stick(new THREE.Mesh(eyeArc,M.dark),HEAD,-0.37,0.13,0.01,faceSmile);
+stick(new THREE.Mesh(eyeArc,M.dark),HEAD,0.37,0.13,0.01,faceSmile);
+[-1,1].forEach(function(sd){
+  stick(flat(M.dark,0.085,0.115,0.04),HEAD,sd*0.35,0.11,0.0,faceWow);
+  stick(flat(M.hi,0.03,0.03,0.02),HEAD,sd*0.35-0.025,0.15,0.035,faceWow);
+});
+stick(flat(M.dark,0.07,0.09,0.03),HEAD,0,-0.3,0.02,faceWow);              // 놀란 입
+stick(flat(M.blush,0.17,0.105,0.03),HEAD,-0.62,-0.08,0.0);                // 볼터치
+stick(flat(M.blush,0.17,0.105,0.03),HEAD,0.62,-0.08,0.0);
+stick(flat(M.blush,0.075,0.06,0.05),HEAD,0,-0.05,0.02);                    // 코
+// 콧수염 — 끝이 말려 올라간 팔자수염
+[-1,1].forEach(function(sd){
+  var P=[[0.0,-0.15],[0.12,-0.2],[0.24,-0.2],[0.33,-0.14],[0.37,-0.06],[0.32,-0.01]].map(function(q){return surf(HEAD,sd*q[0],q[1],0.035).p;});
+  var tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),24,0.045,6,false),M.dark);body.add(tube);
+  var cap=ball(M.dark,P[5].x,P[5].y,P[5].z,0.05,0.05,0.05,body);
+});
+// 길고 뾰족한 턱수염
+var beard=new THREE.Group();body.add(beard);beard.position.set(0,0.98,-1.0);
 (function(){
-  var cup=new THREE.Group();cup.position.y=1.93;body.add(cup);
-  var s=new THREE.Mesh(new THREE.CylinderGeometry(0.66,0.5,0.07,20),M.white);s.position.y=0.03;cup.add(s);outl(s,1.07);
-  var pts=[[0.25,0.06],[0.36,0.1],[0.44,0.22],[0.47,0.36],[0.47,0.5]].map(function(p){return new THREE.Vector2(p[0],p[1]);});
-  var c=new THREE.Mesh(new THREE.LatheGeometry(pts,20),new THREE.MeshToonMaterial({color:0xfffaf2,side:THREE.DoubleSide}));cup.add(c);
-  var co=new THREE.Mesh(c.geometry,new THREE.MeshBasicMaterial({color:0x3a2418,side:THREE.BackSide}));co.scale.set(1.09,1.02,1.09);cup.add(co);
-  var k=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.02,20),M.coffee);k.position.y=0.44;cup.add(k);
-  var h=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.045,6,12),M.white);h.position.set(0.55,0.29,0);cup.add(h);outl(h,1.0).children[0].scale.set(1.12,1.12,1.6);
+  var c=new THREE.Mesh(new THREE.ConeGeometry(0.19,1.2,10),M.dark);c.rotation.x=Math.PI;c.position.y=-0.58;c.scale.z=0.5;beard.add(c);
+  ball(M.dark,0,-0.02,0,0.2,0.1,0.1,beard);
 })();
-// 무궁화
-var fl=makeFlower(body,-0.95,1.36,-0.12,0.37,true);fl.rotation.y=0.95;
-var fr=makeFlower(body,0.95,1.36,-0.12,0.37,true);fr.rotation.y=-0.95;fr.scale.x*=-1;
-// 날개
+// 무궁화 — 머리 양옆
+var fl=makeFlower(body,-1.0,HEAD.y+0.12,-0.05,0.4,true);fl.rotation.y=0.75;
+var fr=makeFlower(body,1.0,HEAD.y+0.12,-0.05,0.4,true);fr.rotation.y=-0.75;fr.scale.x*=-1;
+// 머리 위 커피잔 + 김
+var steamG=new THREE.Group();
+(function(){
+  var cup=new THREE.Group();cup.position.y=HEAD.y+HEAD.ry-0.04;body.add(cup);
+  var s=new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.48,0.07,24),M.white);s.position.y=0.04;cup.add(s);outl(s,1.06);
+  var pts=[[0.24,0.07],[0.36,0.1],[0.44,0.22],[0.47,0.36],[0.48,0.5]].map(function(p){return new THREE.Vector2(p[0],p[1]);});
+  var c=new THREE.Mesh(new THREE.LatheGeometry(pts,24),new THREE.MeshToonMaterial({color:0xfffaf2,side:THREE.DoubleSide}));cup.add(c);
+  var co=new THREE.Mesh(c.geometry,new THREE.MeshBasicMaterial({color:0x3b2619,side:THREE.BackSide}));co.scale.set(1.08,1.02,1.08);cup.add(co);
+  var k=new THREE.Mesh(new THREE.CylinderGeometry(0.43,0.43,0.02,24),M.coffee);k.position.y=0.45;cup.add(k);
+  var h=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.045,6,14),M.white);h.position.set(0.56,0.29,0);cup.add(h);
+  steamG.position.y=0.55;cup.add(steamG);
+  for(var j=0;j<3;j++){var P=[];
+    for(var t=0;t<=8;t++){var f=t/8;P.push(new THREE.Vector3((j-1)*0.16+Math.sin(f*7+j*2)*0.1,f*0.85,Math.cos(f*5+j)*0.04));}
+    var w=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),24,0.032-j*0.004,5,false),M.steam);
+    w.scale.y=1-j*0.18;steamG.add(w);}
+})();
+// 날개 — 위 큰 한 쌍, 아래 작은 한 쌍, 금빛 테두리와 날개맥
 var wings=[];
 (function(){
-  var wg=new THREE.CircleGeometry(1,16),eg=new THREE.RingGeometry(0.92,1,16),vg=new THREE.PlaneGeometry(1,0.035);
-  function wing(side,y,sx,sy,tilt){
-    var pivot=new THREE.Group();pivot.position.set(side*0.25,y,0.74);
-    var w=new THREE.Group();w.position.set(side*sx,0,0);w.scale.set(sx,sy,1);w.rotation.z=side*tilt;
-    w.add(new THREE.Mesh(wg,M.wing));w.add(new THREE.Mesh(eg,M.wingEdge));
-    for(var k=-1;k<=1;k++){var v=new THREE.Mesh(vg,M.wingEdge);v.scale.x=1.7-Math.abs(k)*0.35;v.position.set(0,k*0.3,0.01);v.rotation.z=side*k*-0.25;w.add(v);}
-    pivot.add(w);body.add(pivot);wings.push({p:pivot,side:side,up:y>0});
+  var sh=new THREE.Shape();sh.moveTo(0,0);
+  sh.bezierCurveTo(0.15,0.55,0.95,0.8,1.25,0.48);sh.bezierCurveTo(1.48,0.18,1.15,-0.25,0.62,-0.2);sh.bezierCurveTo(0.3,-0.17,0.05,-0.08,0,0);
+  var fillG=new THREE.ShapeGeometry(sh,16),edge=new THREE.BufferGeometry().setFromPoints(sh.getPoints(40));
+  var veins=[[[0.05,0.02],[0.5,0.3],[1.05,0.5]],[[0.05,0.0],[0.6,0.12],[1.2,0.18]],[[0.05,-0.02],[0.5,-0.08],[0.9,-0.12]],[[0.45,0.26],[0.62,0.06],[0.55,-0.12]]];
+  function wing(side,y,s,tilt){
+    var pivot=new THREE.Group();pivot.position.set(side*0.22,y,0.78);
+    var w=new THREE.Group();w.scale.set(side*s,s,1);w.rotation.z=side*tilt;
+    w.add(new THREE.Mesh(fillG,M.wing));w.add(new THREE.LineLoop(edge,M.wingLine));
+    veins.forEach(function(v){w.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(new THREE.SplineCurve(v.map(function(q){return new THREE.Vector2(q[0],q[1]);})).getPoints(8)),M.wingLine));});
+    pivot.add(w);body.add(pivot);wings.push({p:pivot,side:side,up:y>0.2});
   }
-  wing(-1,0.5,1.2,0.74,-0.5);wing(1,0.5,1.2,0.74,-0.5);
-  wing(-1,-0.2,0.85,0.52,0.45);wing(1,-0.2,0.85,0.52,0.45);
+  wing(-1,0.55,1.45,0.42);wing(1,0.55,1.45,0.42);
+  wing(-1,0.05,0.95,-0.6);wing(1,0.05,0.95,-0.6);
 })();
+body.scale.set(3,3,3);body.rotation.x=-0.45;
 
 /* ---------- 김(증기) ---------- */
 var puffs=[],puffMat=new THREE.MeshBasicMaterial({color:0xfff6e6}),pI=0;
 for(i=0;i<60;i++){var pm=new THREE.Mesh(cgeo,puffMat);pm.visible=false;scene.add(pm);puffs.push({m:pm,life:0,max:1,v:new THREE.Vector3(),g:1});}
-var cupLocal=new THREE.Vector3(0,2.9,0.25),buttLocal=new THREE.Vector3(0,-0.75,1.05),tmpV=new THREE.Vector3(),tmpV2=new THREE.Vector3();
+var cupLocal=new THREE.Vector3(0,3.1,0),buttLocal=new THREE.Vector3(0,-0.62,1.0),tmpV=new THREE.Vector3(),tmpV2=new THREE.Vector3();
 function puff(pos,vx,vy,vz,life,grow){var p=puffs[pI++%puffs.length];p.m.position.copy(pos);p.life=p.max=life;p.m.visible=true;p.v.set(vx,vy,vz);p.g=grow;}
 
 /* ---------- 부스트 원두 (엉덩이에서 발사) ---------- */
@@ -525,11 +573,13 @@ function tick(now){
   var sc=S.cam===0?4.5:1;fairy.scale.set(sc,sc,sc);fairy.visible=S.cam!==2;
   fx.position.copy(S.pos);fx.quaternion.copy(fairy.quaternion);fx.scale.set(sc,sc,sc);
   body.position.y=Math.sin(time*3)*0.5;
-  body.rotation.x=-0.75-(boost?0.3:0)*Math.min(1,(S.speed-90)/60);
+  body.rotation.x=-0.45-(boost?0.4:0)*Math.min(1,(S.speed-90)/60);
+  faceWow.visible=boost;faceSmile.visible=!boost;
+  steamG.rotation.y=time*0.8;steamG.rotation.z=Math.sin(time*2)*0.12;beard.rotation.x=0.12+Math.sin(time*5)*0.05+(boost?0.25:0);
   var flap=Math.sin(time*(boost?36:22));
-  for(i=0;i<wings.length;i++){var w=wings[i];w.p.rotation.y=w.side*(0.25+flap*(w.up?0.55:0.4));}
-  armL.position.z=boost?-0.55:-0.15;armL.position.y=boost?0.4:0.05;
-  armR.position.z=armL.position.z;armR.position.y=armL.position.y;
+  for(i=0;i<wings.length;i++){var w=wings[i];w.p.rotation.y=-w.side*(0.25+flap*(w.up?0.55:0.4));}
+  armL.position.set(boost?-0.95:-1.1,boost?0.5:0.1,boost?-0.6:-0.05);armR.position.set(-armL.position.x,armL.position.y,armL.position.z);
+  armL.rotation.x=armR.rotation.x=boost?-1.1:0;
 
   // 원두펀치
   if(S.punchT>0){
@@ -550,7 +600,7 @@ function tick(now){
 
   // 커피잔 김
   puffT-=dt;if(puffT<=0&&S.cam!==2){body.localToWorld(tmpV.copy(cupLocal));var tv=S.cam===0;
-    puff(tmpV,tv?0:fwd.x*S.speed*0.74,(tv?0:fwd.y*S.speed*0.74)+4,tv?0:fwd.z*S.speed*0.74,tv?1.7:0.55,S.cam===0?4:0.8);puffT=0.08;}
+    puff(tmpV,tv?0:fwd.x*S.speed*0.74,(tv?0:fwd.y*S.speed*0.74)+4,tv?0:fwd.z*S.speed*0.74,tv?1.7:0.5,S.cam===0?4:0.45);puffT=0.07;}
   for(i=0;i<puffs.length;i++){var p=puffs[i];if(p.life<=0)continue;p.life-=dt;
     if(p.life<=0){p.m.visible=false;continue;}k=p.life/p.max;s=(0.7+(1-k)*1.3)*(k<0.4?k/0.4:1)*p.g;
     p.m.scale.set(s,s,s);p.m.position.addScaledVector(p.v,dt);}
@@ -586,7 +636,11 @@ function tick(now){
 
   // 카메라
   camera.up.set(0,1,0);
-  if(S.cam===0){camera.position.set(S.pos.x,S.pos.y+430,S.pos.z+1);camera.up.set(0,0,-1);camera.lookAt(S.pos);}
+  if(!S.started){var sw=Math.sin(time*0.35)*0.6;
+    var pt=innerHeight>innerWidth,cdist=pt?27:21;
+    camera.position.set(S.pos.x+(-Math.sin(S.yaw+sw))*cdist,S.pos.y+3,S.pos.z+(-Math.cos(S.yaw+sw))*cdist);
+    look.set(S.pos.x,S.pos.y-(pt?6:1.5),S.pos.z);camera.lookAt(look);camSnap=true;}
+  else if(S.cam===0){camera.position.set(S.pos.x,S.pos.y+430,S.pos.z+1);camera.up.set(0,0,-1);camera.lookAt(S.pos);}
   else if(S.cam===1){
     var cd=24+(S.speed-90)*0.06;
     tgt.set(S.pos.x+Math.sin(S.yaw)*cd,S.pos.y+10-S.pitch*12,S.pos.z+Math.cos(S.yaw)*cd);
