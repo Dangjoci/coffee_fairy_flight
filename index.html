@@ -384,31 +384,34 @@ shadow.rotation.x=-Math.PI/2;scene.add(shadow);
 
 /* ---------- 연기·김 재질 ---------- */
 var PUFF_VS='varying vec3 vN;void main(){vN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
-var PUFF_FS=GLC+'\nuniform float uA;uniform vec3 uC;varying vec3 vN;\nvoid main(){float bay=bayer(gl_FragCoord.xy);if(bay>=uA)discard;float l=vN.y*.6+dot(vN,uSun)*.4;gl_FragColor=vec4(l>.1?uC:uC*vec3(.9,.82,.92),1.);}';
+var PUFF_FS=GLC+'\nuniform float uA;uniform vec3 uC;varying vec3 vN;\nvoid main(){float bay=bayer(gl_FragCoord.xy);if(bay>=uA)discard;gl_FragColor=vec4(uC,1.);}';
 function puffMaterial(hex){return new THREE.ShaderMaterial({uniforms:{uTime:U.uTime,uSun:U.uSun,uHaze:U.uHaze,uA:{value:1},uC:{value:new THREE.Color(hex)}},vertexShader:PUFF_VS,fragmentShader:PUFF_FS,fog:false});}
 var cgeo=new THREE.IcosahedronGeometry(1,2);
-/* ---------- 커피요정 (캐릭터 시트 기준) ---------- */
+/* ---------- 커피요정 (캐릭터 시트 기준: 납작한 색 + 갈색 외곽선) ---------- */
 function toon(c){return new THREE.MeshToonMaterial({color:c});}
-var M={skin:toon(0xf6cda6),shorts:toon(0x4f3424),ribbon:toon(0xa57a4c),white:toon(0xfffaf2),coffee:toon(0x3a2418),
-  pink:toon(0xee5c9c),pinkL:toon(0xf7a3c6),pinkD:toon(0xb8306c),yellow:toon(0xf3cf4a),leaf:toon(0x4b8a3e),dark:toon(0x3b2619),
-  blush:new THREE.MeshBasicMaterial({color:0xf5a0a0}),nip:new THREE.MeshBasicMaterial({color:0xee9c9c}),
-  hi:new THREE.MeshBasicMaterial({color:0xffffff}),
+function flatM(c,o){var p={color:c,fog:false};if(o)for(var k in o)p[k]=o[k];return new THREE.MeshBasicMaterial(p);}
+var M={skin:flatM(0xf9d0a8),shorts:flatM(0x4d3526),shortsD:flatM(0x3b2619),ribbon:flatM(0xa8763f),white:flatM(0xfffaf0),cupSh:flatM(0xefe2cf),
+  coffee:flatM(0x3a2418),pink:flatM(0xf0649f),pinkL:flatM(0xf78fbb),pinkD:flatM(0xc7337a),yellow:flatM(0xf6cf45),leaf:flatM(0x4b8f3f),
+  dark:flatM(0x3b2619),blush:flatM(0xf7a3a3),nip:flatM(0xf29a9a),hi:flatM(0xffffff),
   bean:toon(0x6a4028),beanD:toon(0x3a2418),sleepy:toon(0x7a7198),sleepyD:toon(0x5d5580),
-  line:new THREE.MeshBasicMaterial({color:0x3b2619,side:THREE.BackSide}),
-  wing:new THREE.MeshBasicMaterial({color:0xfff6e6,transparent:true,opacity:0.5,side:THREE.DoubleSide,depthWrite:false}),
-  wingLine:new THREE.LineBasicMaterial({color:0xb98549}),
-  steam:new THREE.MeshBasicMaterial({color:0xc4a688})};
+  line:flatM(0x3b2619,{side:THREE.BackSide}),
+  wing:flatM(0xfffaf0,{transparent:true,opacity:0.5,side:THREE.DoubleSide,depthWrite:false}),
+  wingLine:new THREE.LineBasicMaterial({color:0xb9853f,fog:false}),
+  steam:flatM(0xb89a80)};
 var sph=new THREE.SphereGeometry(1,24,16),sphLo=new THREE.SphereGeometry(1,10,8);
 function outl(m,k){var o=new THREE.Mesh(m.geometry,M.line);o.scale.set(k,k,k);m.add(o);return m;}
 function ball(mat,x,y,z,sx,sy,sz,parent,ol){var m=new THREE.Mesh(sph,mat);m.position.set(x,y,z);
   m.scale.set(sx,sy===undefined?sx:sy,sz===undefined?sx:sz);parent.add(m);if(ol)outl(m,ol);return m;}
+// 무궁화: 앞면이 +Z
 function makeFlower(parent,x,y,z,s,leaves){
   var g=new THREE.Group();g.position.set(x,y,z);g.scale.set(s,s,s);
-  if(leaves){var L=[[-1.0,-0.5,0.5],[0.3,-1.05,-0.7],[-0.6,0.95,2.2],[0.95,0.55,1.0]];
-    for(var k=0;k<L.length;k++){var lf=ball(M.leaf,L[k][0],L[k][1],-0.25,0.62,0.3,0.1,g,1.12);lf.rotation.z=L[k][2];}}
-  for(var i=0;i<5;i++){var a=i/5*Math.PI*2+0.3,pt=ball(i%2?M.pink:M.pinkL,Math.cos(a)*0.58,Math.sin(a)*0.58,0,0.58,0.48,0.14,g,1.1);pt.rotation.z=a;}
-  ball(M.pinkD,0,0,0.1,0.3,0.3,0.1,g);
-  ball(M.yellow,0,0,0.3,0.12,0.12,0.12,g);
+  if(leaves){var L=[1.2,3.3,5.2];
+    for(var k=0;k<L.length;k++){var lf=ball(M.leaf,Math.cos(L[k])*0.95,Math.sin(L[k])*0.95,-0.14,0.5,0.27,0.06,g,1.14);lf.rotation.z=L[k];}}
+  for(var i=0;i<5;i++){var a=i/5*Math.PI*2+1.5708,pt=ball(i%2?M.pink:M.pinkL,Math.cos(a)*0.5,Math.sin(a)*0.5,i*0.012,0.55,0.5,0.09,g,1.1);pt.rotation.z=a;}
+  ball(M.pinkD,0,0,0.1,0.3,0.3,0.06,g);
+  for(i=0;i<5;i++){a=i/5*Math.PI*2+1.5708;var sl=ball(M.pinkD,Math.cos(a)*0.36,Math.sin(a)*0.36,0.105,0.2,0.035,0.03,g);sl.rotation.z=a;}
+  var st=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.07,0.34,6),M.yellow);st.rotation.x=Math.PI/2;st.position.z=0.27;g.add(st);
+  ball(M.yellow,0,0,0.46,0.1,0.1,0.1,g);
   parent.add(g);return g;
 }
 function makeBean(parent,s){var g=new THREE.Group();
@@ -422,111 +425,125 @@ function makeBeanLo(parent,s){var g=new THREE.Group();
 
 var fairy=new THREE.Group();fairy.rotation.order='YXZ';scene.add(fairy);
 var body=new THREE.Group();fairy.add(body);
-// 비율: 2.5~3등신 — 큰 머리, 통통한 배
-var HEAD={y:1.24,rx:1.07,ry:0.99,rz:0.99},BODY={y:0,rx:1.17,ry:1.02,rz:1.0};
-function surf(E,x,y,out,back){
-  var u=x/E.rx,v=y/E.ry,w=Math.sqrt(Math.max(0,1-u*u-v*v)),sd=back?1:-1;
-  var p=new THREE.Vector3(x,E.y+y,sd*E.rz*w),n=new THREE.Vector3(u/E.rx,v/E.ry,sd*w/E.rz).normalize();
+// 몸 윤곽: 머리가 키의 절반을 넘는 조롱박 모양 (시트 정면도에서 잰 비율)
+var PROF=[[0,-1.0],[0.5,-0.97],[0.98,-0.8],[1.22,-0.5],[1.26,-0.2],[1.18,0.1],[1.01,0.36],[0.99,0.5],[1.06,0.75],[1.12,1.1],[1.1,1.4],[1.02,1.68],[0.86,1.94],[0.6,2.14],[0.3,2.26],[0,2.3]];
+var ZS=0.93,TOP=2.3,SHORTS_Y=-0.43;
+var prof=new THREE.SplineCurve(PROF.map(function(p){return new THREE.Vector2(p[0],p[1]);})).getPoints(120);
+prof.forEach(function(p){if(p.x<0)p.x=0;});prof[0].x=0;prof[prof.length-1].x=0;
+function RY(y){if(y<=prof[0].y)return 0;for(var i=1;i<prof.length;i++){if(prof[i].y>=y){var a=prof[i-1],b=prof[i],t=(y-a.y)/((b.y-a.y)||1);return a.x+(b.x-a.x)*t;}}return 0;}
+function offsetProf(o,y0,y1){var out=[];for(var i=0;i<prof.length;i++){var p=prof[i];if(p.y<y0||p.y>y1)continue;
+  var a=prof[Math.max(0,i-1)],b=prof[Math.min(prof.length-1,i+1)],tx=b.x-a.x,ty=b.y-a.y,l=Math.sqrt(tx*tx+ty*ty)||1;
+  out.push(new THREE.Vector2(Math.max(0,p.x+ty/l*o),p.y-tx/l*o));}return out;}
+function surf(x,y,out,back){
+  var r=RY(y),dr=(RY(y+0.02)-RY(y-0.02))/0.04,sd=back?1:-1,zz=Math.sqrt(Math.max(0,r*r-x*x));
+  var p=new THREE.Vector3(x,y,sd*ZS*zz),n=new THREE.Vector3(x,-r*dr,sd*zz/ZS).normalize();
   p.addScaledVector(n,out||0);return {p:p,n:n};
 }
-function stick(mesh,E,x,y,out,parent,back){var s=surf(E,x,y,out,back);(parent||body).add(mesh);
+function stick(mesh,x,y,out,parent,back){var s=surf(x,y,out,back);(parent||body).add(mesh);
   mesh.position.copy(s.p);mesh.lookAt(s.p.clone().add(s.n));return mesh;}
 function flat(mat,sx,sy,sz){var m=new THREE.Mesh(sph,mat);m.scale.set(sx,sy,sz);return m;}
 
-ball(M.skin,0,BODY.y,0,BODY.rx,BODY.ry,BODY.rz,body,1.035);           // 배
-ball(M.skin,0,HEAD.y,0,HEAD.rx,HEAD.ry,HEAD.rz,body,1.035);           // 머리
-// 갈색 반바지 + 허리 리본
 (function(){
-  var g=new THREE.SphereGeometry(1,24,12,0,Math.PI*2,Math.PI*0.57,Math.PI*0.43);
-  var m=new THREE.Mesh(g,M.shorts);m.scale.set(BODY.rx*1.035,BODY.ry*1.035,BODY.rz*1.035);body.add(m);
-  var o=new THREE.Mesh(g,M.line);o.scale.set(1.025,1.025,1.025);m.add(o);
-  var band=new THREE.Mesh(new THREE.TorusGeometry(1,0.035,5,32),M.dark);band.rotation.x=Math.PI/2;
-  band.scale.set(BODY.rx*1.02,BODY.rz*1.02,1);band.position.y=-0.22;body.add(band);
+  var torso=new THREE.Group();torso.scale.z=ZS;body.add(torso);
+  torso.add(new THREE.Mesh(new THREE.LatheGeometry(prof,36),M.skin));
+  torso.add(new THREE.Mesh(new THREE.LatheGeometry(offsetProf(0.05,-9,9),36),M.line));
+  // 갈색 바지
+  var sp=offsetProf(0.022,-9,SHORTS_Y);sp.push(new THREE.Vector2(RY(SHORTS_Y)+0.022,SHORTS_Y));
+  torso.add(new THREE.Mesh(new THREE.LatheGeometry(sp,36),M.shorts));
+  var band=new THREE.Mesh(new THREE.TorusGeometry(RY(SHORTS_Y)+0.022,0.028,5,40),M.shortsD);band.rotation.x=Math.PI/2;band.position.y=SHORTS_Y;torso.add(band);
+  // 허리 리본 (앞·뒤)
   [false,true].forEach(function(back){
-    var bow=new THREE.Group();
-    var lg=new THREE.TorusGeometry(0.075,0.022,5,10);
-    var l1=new THREE.Mesh(lg,M.ribbon);l1.position.set(-0.08,0.01,0);l1.scale.set(1.2,0.8,1);bow.add(l1);
-    var l2=new THREE.Mesh(lg,M.ribbon);l2.position.set(0.08,0.01,0);l2.scale.set(1.2,0.8,1);bow.add(l2);
-    var tg=new THREE.CylinderGeometry(0.018,0.018,0.2,5);
-    var t1=new THREE.Mesh(tg,M.ribbon);t1.position.set(-0.04,-0.1,0);t1.rotation.z=-0.35;bow.add(t1);
-    var t2=new THREE.Mesh(tg,M.ribbon);t2.position.set(0.04,-0.1,0);t2.rotation.z=0.35;bow.add(t2);
-    stick(bow,BODY,0,-0.3,0.05,body,back);
+    var bow=new THREE.Group(),lg=new THREE.TorusGeometry(0.085,0.024,5,12);
+    [-1,1].forEach(function(sd){
+      var l=new THREE.Mesh(lg,M.ribbon);l.position.set(sd*0.095,0.01,0);l.scale.set(1.15,0.8,1);bow.add(l);
+      var t=new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.22,5),M.ribbon);t.position.set(sd*0.05,-0.13,0);t.rotation.z=sd*0.35;bow.add(t);
+    });
+    ball(M.ribbon,0,0.01,0,0.035,0.035,0.035,bow);
+    stick(bow,0,-0.66,0.04,body,back);
   });
 })();
-ball(M.skin,-0.42,-1.0,-0.12,0.32,0.2,0.4,body,1.12);ball(M.skin,0.42,-1.0,-0.12,0.32,0.2,0.4,body,1.12); // 발
-var armL=ball(M.skin,-1.1,0.1,-0.05,0.24,0.42,0.26,body,1.13),armR=ball(M.skin,1.1,0.1,-0.05,0.24,0.42,0.26,body,1.13);
-armL.rotation.z=-0.28;armR.rotation.z=0.28;
-stick(flat(M.nip,0.055,0.055,0.02),BODY,-0.44,0.42,0.005);stick(flat(M.nip,0.055,0.055,0.02),BODY,0.44,0.42,0.005);
+ball(M.skin,-0.46,-1.0,-0.16,0.31,0.17,0.38,body,1.13);ball(M.skin,0.46,-1.0,-0.16,0.31,0.17,0.38,body,1.13); // 발
+var armL=ball(M.skin,-1.22,-0.15,-0.1,0.2,0.34,0.23,body,1.15),armR=ball(M.skin,1.22,-0.15,-0.1,0.2,0.34,0.23,body,1.15);
+armL.rotation.z=-0.3;armR.rotation.z=0.3;
+stick(flat(M.nip,0.05,0.05,0.015),-0.66,0.04,0.004);stick(flat(M.nip,0.05,0.05,0.015),0.66,0.04,0.004);
 
-// 얼굴 — 기본(웃는 눈) / 놀람(동그란 눈) 두 벌
+// 얼굴 — 기본(웃는 눈) / 놀람(동그란 눈)
 var faceSmile=new THREE.Group(),faceWow=new THREE.Group();body.add(faceSmile);body.add(faceWow);faceWow.visible=false;
-var eyeArc=new THREE.TorusGeometry(0.13,0.03,5,12,Math.PI);
-stick(new THREE.Mesh(eyeArc,M.dark),HEAD,-0.37,0.13,0.01,faceSmile);
-stick(new THREE.Mesh(eyeArc,M.dark),HEAD,0.37,0.13,0.01,faceSmile);
-[-1,1].forEach(function(sd){
-  stick(flat(M.dark,0.085,0.115,0.04),HEAD,sd*0.35,0.11,0.0,faceWow);
-  stick(flat(M.hi,0.03,0.03,0.02),HEAD,sd*0.35-0.025,0.15,0.035,faceWow);
-});
-stick(flat(M.dark,0.07,0.09,0.03),HEAD,0,-0.3,0.02,faceWow);              // 놀란 입
-stick(flat(M.blush,0.17,0.105,0.03),HEAD,-0.62,-0.08,0.0);                // 볼터치
-stick(flat(M.blush,0.17,0.105,0.03),HEAD,0.62,-0.08,0.0);
-stick(flat(M.blush,0.075,0.06,0.05),HEAD,0,-0.05,0.02);                    // 코
-// 콧수염 — 끝이 말려 올라간 팔자수염
-[-1,1].forEach(function(sd){
-  var P=[[0.0,-0.15],[0.12,-0.2],[0.24,-0.2],[0.33,-0.14],[0.37,-0.06],[0.32,-0.01]].map(function(q){return surf(HEAD,sd*q[0],q[1],0.035).p;});
-  var tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),24,0.045,6,false),M.dark);body.add(tube);
-  var cap=ball(M.dark,P[5].x,P[5].y,P[5].z,0.05,0.05,0.05,body);
-});
-// 길고 뾰족한 턱수염
-var beard=new THREE.Group();body.add(beard);beard.position.set(0,0.98,-1.0);
 (function(){
-  var c=new THREE.Mesh(new THREE.ConeGeometry(0.19,1.2,10),M.dark);c.rotation.x=Math.PI;c.position.y=-0.58;c.scale.z=0.5;beard.add(c);
-  ball(M.dark,0,-0.02,0,0.2,0.1,0.1,beard);
+  var eyeArc=new THREE.TorusGeometry(0.16,0.03,5,14,Math.PI),brow=new THREE.TorusGeometry(0.12,0.022,4,10,Math.PI*0.6);
+  [-1,1].forEach(function(sd){
+    stick(new THREE.Mesh(eyeArc,M.dark),sd*0.42,1.27,0.012,faceSmile);
+    var b=stick(new THREE.Mesh(brow,M.dark),sd*0.45,1.56,0.012);b.rotateZ(0.63);
+    stick(flat(M.dark,0.085,0.115,0.03),sd*0.4,1.3,0.0,faceWow);
+    stick(flat(M.hi,0.03,0.03,0.015),sd*0.4-0.028,1.345,0.03,faceWow);
+    stick(flat(M.blush,0.15,0.09,0.02),sd*0.78,1.08,0.002);
+    // 콧수염: 가운데에서 내려갔다가 끝이 말려 올라감
+    var P=[[0.0,1.0],[0.13,0.95],[0.27,0.94],[0.38,0.98],[0.44,1.06],[0.41,1.13],[0.35,1.12]].map(function(q){return surf(sd*q[0],q[1],0.035).p;});
+    body.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),28,0.042,6,false),M.dark));
+    ball(M.dark,P[6].x,P[6].y,P[6].z,0.042,0.042,0.042,body);
+  });
+  stick(flat(M.dark,0.07,0.09,0.03),0,0.86,0.02,faceWow);       // 놀란 입
+  stick(flat(M.blush,0.065,0.05,0.04),0,1.07,0.02);             // 코
+  ball(M.dark,0,1.0,surf(0,1.0,0.035).p.z,0.06,0.05,0.05,body);
 })();
-// 무궁화 — 머리 양옆
-var fl=makeFlower(body,-1.0,HEAD.y+0.12,-0.05,0.4,true);fl.rotation.y=0.75;
-var fr=makeFlower(body,1.0,HEAD.y+0.12,-0.05,0.4,true);fr.rotation.y=-0.75;fr.scale.x*=-1;
+// 턱수염: 배까지 내려오는 길고 뾰족한 수염 (몸 곡면을 따라 흐름)
+var beard=new THREE.Group();body.add(beard);
+(function(){
+  var y0=0.98,y1=0.02,N=14,pivot=surf(0,y0,0.02).p,pos=[],idx=[],i;
+  beard.position.copy(pivot);
+  for(i=0;i<=N;i++){var t=i/N,y=y0+(y1-y0)*t,w=0.135*Math.pow(1-t,1.15)+0.03*Math.sin(Math.min(1,t*3)*1.5708)*(1-t)+0.004;
+    var l=surf(-w,y,0.03).p.sub(pivot),c=surf(0,y,0.11*(1-t*0.6)).p.sub(pivot),r=surf(w,y,0.03).p.sub(pivot);
+    pos.push(l.x,l.y,l.z,c.x,c.y,c.z,r.x,r.y,r.z);
+    if(i<N){var a=i*3;idx.push(a,a+3,a+1,a+1,a+3,a+4,a+1,a+4,a+2,a+2,a+4,a+5);}}
+  var g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);
+  beard.add(new THREE.Mesh(g,flatM(0x3b2619,{side:THREE.DoubleSide})));
+})();
+// 무궁화 — 머리 양옆 위쪽, 앞을 보게
+var fl=makeFlower(body,-1.1,1.6,-0.22,0.4,true);fl.rotation.y=Math.PI+0.55;
+var fr=makeFlower(body,1.1,1.6,-0.22,0.4,true);fr.rotation.y=Math.PI-0.55;
 // 머리 위 커피잔 + 김
 var steamG=new THREE.Group();
 (function(){
-  var cup=new THREE.Group();cup.position.y=HEAD.y+HEAD.ry-0.04;body.add(cup);
-  var s=new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.48,0.07,24),M.white);s.position.y=0.04;cup.add(s);outl(s,1.06);
-  var pts=[[0.24,0.07],[0.36,0.1],[0.44,0.22],[0.47,0.36],[0.48,0.5]].map(function(p){return new THREE.Vector2(p[0],p[1]);});
-  var c=new THREE.Mesh(new THREE.LatheGeometry(pts,24),new THREE.MeshToonMaterial({color:0xfffaf2,side:THREE.DoubleSide}));cup.add(c);
-  var co=new THREE.Mesh(c.geometry,new THREE.MeshBasicMaterial({color:0x3b2619,side:THREE.BackSide}));co.scale.set(1.08,1.02,1.08);cup.add(co);
-  var k=new THREE.Mesh(new THREE.CylinderGeometry(0.43,0.43,0.02,24),M.coffee);k.position.y=0.45;cup.add(k);
-  var h=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.045,6,14),M.white);h.position.set(0.56,0.29,0);cup.add(h);
-  steamG.position.y=0.55;cup.add(steamG);
-  for(var j=0;j<3;j++){var P=[];
-    for(var t=0;t<=8;t++){var f=t/8;P.push(new THREE.Vector3((j-1)*0.16+Math.sin(f*7+j*2)*0.1,f*0.85,Math.cos(f*5+j)*0.04));}
-    var w=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),24,0.032-j*0.004,5,false),M.steam);
-    w.scale.y=1-j*0.18;steamG.add(w);}
+  var cup=new THREE.Group();cup.position.y=TOP-0.05;body.add(cup);
+  var s=new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.46,0.07,24),M.white);s.position.y=0.04;cup.add(s);outl(s,1.07);
+  var pts=[[0.22,0.07],[0.34,0.1],[0.42,0.22],[0.45,0.36],[0.46,0.5]].map(function(p){return new THREE.Vector2(p[0],p[1]);});
+  var c=new THREE.Mesh(new THREE.LatheGeometry(pts,24),flatM(0xfffaf0,{side:THREE.DoubleSide}));cup.add(c);
+  var co=new THREE.Mesh(c.geometry,M.line);co.scale.set(1.1,1.03,1.1);cup.add(co);
+  var k=new THREE.Mesh(new THREE.CylinderGeometry(0.41,0.41,0.02,24),M.coffee);k.position.y=0.45;cup.add(k);
+  var h=new THREE.Mesh(new THREE.TorusGeometry(0.14,0.04,6,14),M.white);h.position.set(0.54,0.29,0);cup.add(h);
+  var ho=new THREE.Mesh(new THREE.TorusGeometry(0.14,0.075,6,14),M.line);ho.position.copy(h.position);cup.add(ho);
+  steamG.position.y=0.56;cup.add(steamG);
+  for(var j=0;j<2;j++){var P=[];
+    for(var t=0;t<=10;t++){var f=t/10;P.push(new THREE.Vector3((j-0.5)*0.26+Math.sin(f*7.5+j*2.4)*0.1,f*0.95,Math.cos(f*5+j)*0.03));}
+    var w=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P),28,0.03,5,false),M.steam);
+    w.scale.y=1-j*0.2;steamG.add(w);}
 })();
 // 날개 — 위 큰 한 쌍, 아래 작은 한 쌍, 금빛 테두리와 날개맥
 var wings=[];
 (function(){
   var sh=new THREE.Shape();sh.moveTo(0,0);
-  sh.bezierCurveTo(0.15,0.55,0.95,0.8,1.25,0.48);sh.bezierCurveTo(1.48,0.18,1.15,-0.25,0.62,-0.2);sh.bezierCurveTo(0.3,-0.17,0.05,-0.08,0,0);
-  var fillG=new THREE.ShapeGeometry(sh,16),edge=new THREE.BufferGeometry().setFromPoints(sh.getPoints(40));
-  var veins=[[[0.05,0.02],[0.5,0.3],[1.05,0.5]],[[0.05,0.0],[0.6,0.12],[1.2,0.18]],[[0.05,-0.02],[0.5,-0.08],[0.9,-0.12]],[[0.45,0.26],[0.62,0.06],[0.55,-0.12]]];
+  sh.bezierCurveTo(0.1,0.6,0.9,0.92,1.28,0.55);sh.bezierCurveTo(1.55,0.25,1.25,-0.3,0.66,-0.26);sh.bezierCurveTo(0.3,-0.22,0.05,-0.1,0,0);
+  var fillG=new THREE.ShapeGeometry(sh,18),edgeP=sh.getPoints(48);
+  var veins=[[[0.04,0.02],[0.5,0.36],[1.08,0.56]],[[0.04,0.0],[0.6,0.14],[1.26,0.2]],[[0.04,-0.02],[0.5,-0.1],[0.95,-0.16]],[[0.42,0.3],[0.62,0.08],[0.56,-0.16]],[[0.85,0.5],[1.0,0.18],[0.9,-0.12]]];
   function wing(side,y,s,tilt){
-    var pivot=new THREE.Group();pivot.position.set(side*0.22,y,0.78);
+    var pivot=new THREE.Group();pivot.position.set(side*0.2,y,surf(0,y,0.02,true).p.z);
     var w=new THREE.Group();w.scale.set(side*s,s,1);w.rotation.z=side*tilt;
-    w.add(new THREE.Mesh(fillG,M.wing));w.add(new THREE.LineLoop(edge,M.wingLine));
+    w.add(new THREE.Mesh(fillG,M.wing));
+    for(var o=0;o<2;o++){var e=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(edgeP.map(function(p){return new THREE.Vector2(p.x*(1-o*0.035)+o*0.02,p.y*(1-o*0.035));})),M.wingLine);w.add(e);}
     veins.forEach(function(v){w.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(new THREE.SplineCurve(v.map(function(q){return new THREE.Vector2(q[0],q[1]);})).getPoints(8)),M.wingLine));});
-    pivot.add(w);body.add(pivot);wings.push({p:pivot,side:side,up:y>0.2});
+    pivot.add(w);body.add(pivot);wings.push({p:pivot,side:side,up:y>0.3});
   }
-  wing(-1,0.55,1.45,0.42);wing(1,0.55,1.45,0.42);
-  wing(-1,0.05,0.95,-0.6);wing(1,0.05,0.95,-0.6);
+  wing(-1,0.62,1.55,0.36);wing(1,0.62,1.55,0.36);
+  wing(-1,0.2,1.05,-0.72);wing(1,0.2,1.05,-0.72);
 })();
-body.scale.set(3,3,3);body.rotation.x=-0.45;
+body.scale.set(3.3,3.3,3.3);body.rotation.x=-0.45;
 
 /* ---------- 김(증기)·연기 ---------- */
 var puffs=[],pI=0,i;
 for(i=0;i<64;i++){var pm=new THREE.Mesh(cgeo,puffMaterial(0xfff6ea));pm.visible=false;pm.frustumCulled=false;scene.add(pm);
   puffs.push({m:pm,life:0,max:1,v:new THREE.Vector3(),g:1});}
-var cupLocal=new THREE.Vector3(0,3.1,0),buttLocal=new THREE.Vector3(0,-0.62,1.0),tmpV=new THREE.Vector3(),tmpV2=new THREE.Vector3();
-var tipL=new THREE.Vector3(-2.1,0.95,0.85),tipR=new THREE.Vector3(2.1,0.95,0.85);
+var cupLocal=new THREE.Vector3(0,3.05,0),buttLocal=new THREE.Vector3(0,-0.7,0.95),tmpV=new THREE.Vector3(),tmpV2=new THREE.Vector3();
+var tipL=new THREE.Vector3(-2.15,1.3,1.0),tipR=new THREE.Vector3(2.15,1.3,1.0);
 function puff(pos,vx,vy,vz,life,grow,hex){var p=puffs[pI++%puffs.length];p.m.position.copy(pos);p.life=p.max=life;p.m.visible=true;p.v.set(vx,vy,vz);p.g=grow;
   p.m.material.uniforms.uC.value.setHex(hex||0xfff6ea);}
 
@@ -760,13 +777,13 @@ function tick(now){
   var sc=(S.cam===0&&S.started)?5:1;fairy.scale.set(sc,sc,sc);fairy.visible=!(S.cam===2&&S.started);
   fx.position.copy(S.pos);fx.quaternion.copy(fairy.quaternion);fx.scale.set(sc,sc,sc);
   body.position.y=Math.sin(time*3)*0.5;
-  body.rotation.x=-0.45-(boost?0.4:0)*Math.min(1,(S.speed-90)/60);
+  body.rotation.x=S.started?-0.45-(boost?0.4:0)*Math.min(1,(S.speed-90)/60):-0.1;
   faceWow.visible=boost;faceSmile.visible=!boost;
-  steamG.rotation.y=time*0.8;steamG.rotation.z=Math.sin(time*2)*0.12;beard.rotation.x=0.12+Math.sin(time*5)*0.05+(boost?0.25:0);
+  steamG.rotation.y=time*0.8;steamG.rotation.z=Math.sin(time*2)*0.12;beard.rotation.x=0.03+Math.sin(time*5)*0.03+(boost?0.22:0);
   var flap=Math.sin(time*(boost?36:22));
   for(i=0;i<wings.length;i++){var w=wings[i];w.p.rotation.y=-w.side*(0.25+flap*(w.up?0.55:0.4));}
-  armL.position.set(boost?-0.95:-1.1,boost?0.5:0.1,boost?-0.6:-0.05);armR.position.set(-armL.position.x,armL.position.y,armL.position.z);
-  armL.rotation.x=armR.rotation.x=boost?-1.1:0;
+  armL.position.set(boost?-1.34:-1.22,boost?0.02:-0.15,boost?0.12:-0.1);armR.position.set(-armL.position.x,armL.position.y,armL.position.z);
+  armL.rotation.z=boost?-1.15:-0.3;armR.rotation.z=-armL.rotation.z;
 
   // 원두펀치
   if(S.punchT>0){
@@ -833,13 +850,13 @@ function tick(now){
   var cock=S.started&&S.cam===2;
   if(cock!==viewOff||(cock&&voK!==IW*10000+IH)){viewOff=cock;voK=IW*10000+IH;if(cock)camera.setViewOffset(IW,IH,0,Math.round(IH*0.1),IW,IH);else camera.clearViewOffset();}
   if(!S.started){var swg=Math.sin(time*0.35)*0.6;
-    var prt=innerHeight>innerWidth,cdist=prt?27:21;
-    camera.position.set(S.pos.x+(-Math.sin(S.yaw+swg))*cdist,S.pos.y+3,S.pos.z+(-Math.cos(S.yaw+swg))*cdist);
-    look.set(S.pos.x,S.pos.y-(prt?6:1.5),S.pos.z);camera.lookAt(look);camSnap=true;}
+    var prt=innerHeight>innerWidth,cdist=prt?30:23;
+    camera.position.set(S.pos.x+(-Math.sin(S.yaw+swg))*cdist,S.pos.y+4,S.pos.z+(-Math.cos(S.yaw+swg))*cdist);
+    look.set(S.pos.x,S.pos.y+(prt?-4.5:1.2),S.pos.z);camera.lookAt(look);camSnap=true;}
   else if(S.cam===0){camera.position.set(S.pos.x,S.pos.y+520,S.pos.z+1);camera.up.set(0,0,-1);camera.lookAt(S.pos);}
   else if(S.cam===1){
-    var cd=27+(S.speed-90)*0.07;
-    tgt.set(S.pos.x+Math.sin(S.yaw)*cd,S.pos.y+11-S.pitch*13,S.pos.z+Math.cos(S.yaw)*cd);
+    var cd=23+(S.speed-90)*0.07;
+    tgt.set(S.pos.x+Math.sin(S.yaw)*cd,S.pos.y+10-S.pitch*12,S.pos.z+Math.cos(S.yaw)*cd);
     if(camSnap)camPos.copy(tgt);else camPos.lerp(tgt,1-Math.exp(-dt*7));
     var cg=Math.max(0,height(camPos.x,camPos.z))+4;if(camPos.y<cg)camPos.y=cg;
     camera.position.copy(camPos);look.copy(S.pos).addScaledVector(fwd,12);look.y+=5;camera.lookAt(look);
