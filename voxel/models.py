@@ -206,6 +206,66 @@ def bean():
 bn = bean()
 export("bean", bn, 1.0 / 12, (6, 4, 3.5))
 
+
+# ───────────────────────── 건물 (시안: 세계관 글에 외형 묘사가 없어 캐릭터 시트의 색과 소품에서 따옴) ─────────────────────────
+def cafe():
+    """카페 요정의집: 크림색 벽, 갈색 박공지붕, 지붕 위 커피잔."""
+    v = Vox(40, 32, 34)
+    X, Y, Z = v._x, v._y, v._z
+    WALL = v.color((242, 226, 196)); BASE = v.color((150, 100, 70)); ROOF = v.color((120, 70, 48)); ROOF_D = v.color((96, 60, 44))
+    DOOR = v.color((84, 50, 30)); GLASS = v.color((170, 215, 230)); FRAME = v.color((250, 244, 232))
+    CUP = v.color((248, 242, 230)); COFFEE = v.color((84, 50, 30)); PINK = v.color((238, 104, 150)); AWN = v.color((250, 160, 190))
+    v.box((3, 4, 0), (36, 27, 15), WALL); v.box((3, 4, 0), (36, 27, 1), BASE)
+    for z in range(16, 29):                                              # 박공지붕(용마루가 x 방향)
+        k = (z - 16) * 1.1
+        y0, y1 = int(round(2 + k)), int(round(29 - k))
+        if y1 < y0: break
+        v.box((2, y0, z), (37, y1, z), ROOF if z % 2 == 0 else ROOF_D)
+        v.box((3, y0 + 1, z), (3, y1 - 1, z), WALL) if y1 - y0 >= 2 else None
+        v.box((36, y0 + 1, z), (36, y1 - 1, z), WALL) if y1 - y0 >= 2 else None
+    v.box((18, 4, 2), (21, 4, 9), DOOR)                                  # 앞문
+    for x0 in (7, 26):                                                   # 앞 창문
+        v.box((x0, 4, 5), (x0 + 6, 4, 10), FRAME); v.box((x0 + 1, 4, 6), (x0 + 5, 4, 9), GLASS)
+    for x in range(5, 35):                                               # 분홍·흰 줄무늬 차양
+        v.box((x, 2, 12), (x, 3, 12), AWN if (x // 2) % 2 == 0 else FRAME)
+    for sx in (3, 36):                                                   # 옆 창문
+        v.box((sx, 12, 6), (sx, 19, 10), GLASS)
+    v.cylinder((20, 15.5), 5.2, 28, 28, CUP)                             # 지붕 위 커피잔(받침·잔·커피)
+    v.cylinder((20, 15.5), 3.8, 29, 32, CUP); v.cylinder((20, 15.5), 2.8, 32, 32, COFFEE)
+    v.box((24, 15, 30), (25, 16, 31), CUP)
+    for (x, z) in ((19, 12), (20, 13), (21, 12), (20, 11), (20, 12)):    # 문 위 꽃 장식
+        v.box((x, 3, z + 1), (x, 3, z + 1), PINK)
+    return v
+cf = cafe()
+export("cafe", cf, 3.0, (20, 16, 0), dict(hx=57, hz=42, top=84))
+
+def roastery():
+    """로스팅 공장: 벽돌 벽, 톱니지붕, 굴뚝, 앞벽의 원두 표시."""
+    v = Vox(48, 36, 44)
+    X, Y, Z = v._x, v._y, v._z
+    BR = v.color((176, 96, 72)); BR_D = v.color((140, 74, 58)); ROOF = v.color((118, 112, 118)); ROOF_D = v.color((92, 88, 96))
+    GLASS = v.color((170, 215, 230)); DOOR = v.color((70, 66, 74)); CREAM = v.color((242, 226, 196)); BEAN = v.color((108, 72, 55)); BEAN_D = v.color((59, 38, 25))
+    v.box((2, 4, 0), (45, 33, 17), BR); v.box((2, 4, 0), (45, 33, 2), BR_D)
+    for z in (6, 12):                                                    # 벽돌 줄눈
+        v.g[(v.g == BR) & (Z == z)] = BR_D
+    v.box((2, 4, 18), (45, 33, 18), ROOF_D)
+    for t in range(3):                                                   # 톱니지붕 3칸: 한쪽은 비탈, 한쪽은 유리
+        x0 = 2 + t * 14
+        for x in range(x0, x0 + 14):
+            top = 19 + int((x - x0) * 6 / 13)
+            v.box((x, 5, 19), (x, 32, top), ROOF)
+        v.box((x0 + 13, 6, 20), (x0 + 13, 31, 24), GLASS)
+    v.box((20, 4, 0), (27, 4, 10), DOOR)                                 # 큰 문
+    for x0 in (5, 11, 32, 38):                                           # 앞 창문
+        v.box((x0, 4, 9), (x0 + 3, 4, 13), GLASS)
+    v.box((7, 3, 2), (15, 3, 7), CREAM)                                  # 원두 표시판
+    v.ellipsoid((11, 3, 4.5), (3.4, 0.6, 2.2), BEAN); v.box((9, 3, 4), (13, 3, 4), BEAN_D)
+    v.cylinder((40, 26), 3.2, 18, 41, BR_D)                              # 굴뚝
+    v.cylinder((40, 26), 3.2, 36, 37, CREAM); v.cylinder((40, 26), 3.6, 42, 42, ROOF_D); v.cylinder((40, 26), 2.0, 42, 42, 0)
+    return v
+rs = roastery()
+export("roastery", rs, 3.5, (24, 18, 0), dict(hx=77, hz=53, top=88, chim=[56, 150.5, 28]))
+
 json.dump(META, open("meta.json", "w"), indent=1)
 print(json.dumps(META))
 
@@ -222,3 +282,8 @@ if __name__ == "__main__":
         f = render(s_, 205, **kk); f = f.resize((f.width * z, f.height * z), Image.NEAREST)
         row.alpha_composite(f, (10 + i * 300, 10))
     row.save("props_prev.png")
+    b = Image.new("RGBA", (1100, 520), (250, 244, 236, 255))
+    for i, (s_, ang) in enumerate(((cf.slices(), 215), (cf.slices(), 40), (rs.slices(), 215), (rs.slices(), 40))):
+        f = render(s_, ang, spread=1, squash=0.5, shade=0.12); f = f.resize((f.width * 4, f.height * 4), Image.NEAREST)
+        b.alpha_composite(f, (10 + i * 270, 10))
+    b.save("build_prev.png")
