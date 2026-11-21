@@ -266,6 +266,108 @@ def roastery():
 rs = roastery()
 export("roastery", rs, 3.5, (24, 18, 0), dict(hx=77, hz=53, top=88, chim=[56, 150.5, 28]))
 
+
+# ───────────────────────── 부술 것들 (세계관 [본편]에 나오는 물건: 결점두, 디카페인, 원두수리검, 원두탄환, 중절모) ─────────────────────────
+def rnd(i, j, k):                                                         # 무늬용 고정 난수(매번 같은 결과)
+    n = (i * 374761393 + j * 668265263 + k * 2147483647) & 0xffffffff
+    n = ((n ^ (n >> 13)) * 1274126177) & 0xffffffff
+    return ((n ^ (n >> 16)) & 0xffff) / 65535.0
+
+def badbean():
+    """결점두(상한콩): 누렇게 뜬 원두에 곰팡이 점과 깨진 자리."""
+    v = Vox(21, 15, 13)
+    X, Y, Z = v._x, v._y, v._z
+    B = v.color((126, 118, 72)); Dk = v.color((62, 54, 36)); Mold = v.color((170, 192, 124)); Rot = v.color((44, 40, 34)); Lo = v.color((98, 90, 56))
+    v.ellipsoid((10, 7, 6), (10.2, 7.2, 6.2), B)
+    v.g[(v.g == B) & (Z <= 2)] = Lo
+    for x in range(2, 19):                                               # 가운데 홈
+        yc = int(round(7 + 1.4 * math.sin((x - 10) / 2.6)))
+        zs = np.nonzero(v.g[:, yc, x])[0]
+        if len(zs): v.g[zs[-1], yc, x] = Dk
+    solid = v.g > 0
+    for z in range(13):                                                  # 곰팡이·썩은 점(겉면)
+        for y in range(15):
+            for x in range(21):
+                if not solid[z, y, x]: continue
+                edge = (z == 12 or not solid[z + 1, y, x]) or x in (0, 20) or not solid[z, y, x - 1] or not solid[z, y, min(20, x + 1)] or not solid[z, max(0, y - 1), x] or not solid[z, min(14, y + 1), x]
+                if not edge or v.g[z, y, x] == Dk: continue
+                r = rnd(x // 2, y // 2, z // 2)
+                if r > 0.86: v.g[z, y, x] = Mold
+                elif r < 0.07: v.g[z, y, x] = Rot
+    v.ellipsoid((17.5, 3, 9.5), (3.2, 3.2, 3.2), 0)                      # 깨져 나간 자리
+    return v
+export("badbean", badbean(), 2.2, (10, 7, 6))
+
+def decaf():
+    """디카페인 잔: 푸르스름한 띠가 둘린 잔에 묽은 커피."""
+    v = Vox(21, 21, 16)
+    X, Y, Z = v._x, v._y, v._z
+    CUP = v.color((226, 230, 236)); BAND = v.color((112, 138, 176)); TEA = v.color((196, 176, 146)); SAUC = v.color((204, 210, 220))
+    c = (10, 10)
+    v.cylinder(c, 9.6, 0, 0, SAUC); v.cylinder(c, 6.0, 1, 1, SAUC)
+    for z in range(2, 15):
+        v.cylinder(c, 5.6 + (z - 2) * 0.16, z, z, BAND if z in (7, 8, 9) else CUP)
+    v.cylinder(c, 6.6, 14, 14, TEA)
+    r = np.sqrt((X - 10) ** 2 + (Y - 10) ** 2)
+    v.g[(Z == 14) & (r > 6.6) & (r <= 7.6)] = CUP
+    v.g[(np.abs(Y - 10) <= 1.2) & (((X - 18.6) / 2.8) ** 2 + ((Z - 8.5) / 3.6) ** 2 <= 1)] = CUP      # 손잡이
+    v.g[(np.abs(Y - 10) <= 1.2) & (((X - 18.6) / 1.3) ** 2 + ((Z - 8.5) / 2.1) ** 2 <= 1)] = 0
+    v.cylinder(c, 5.2, 2, 13, CUP)                                        # 속을 채워 둔다(부서질 때 판이 되게)
+    return v
+export("decaf", decaf(), 2.2, (10, 10, 8))
+
+def shuriken():
+    """원두수리검: 원두 네 알이 날이 된 표창. 세워서 만든다(면이 앞을 본다)."""
+    v = Vox(31, 3, 31)
+    X, Y, Z = v._x, v._y, v._z
+    B = v.color((108, 72, 55)); Dk = v.color((59, 38, 25)); ST = v.color((156, 158, 170)); ST_D = v.color((104, 106, 120)); Hi = v.color((137, 107, 88))
+    cx = cz = 15
+    for k in range(4):
+        a = math.radians(90 * k)
+        ux, uz = math.cos(a), math.sin(a)
+        px, pz = (X - cx) * ux + (Z - cz) * uz, -(X - cx) * uz + (Z - cz) * ux
+        m = (((px - 9) / 6.4) ** 2 + ((pz - (px - 9) * 0.25) / 3.0) ** 2 <= 1)            # 살짝 휜 원두 날
+        v.g[m] = B
+        v.g[m & (np.abs(pz - (px - 9) * 0.25) < 0.55) & (np.abs(px - 9) < 5) & (Y != 1)] = Dk
+        v.g[m & (pz - (px - 9) * 0.25 > 1.8) & (Y == 1)] = Hi
+    r = np.sqrt((X - cx) ** 2 + (Z - cz) ** 2)
+    v.g[r <= 4.4] = ST; v.g[(r <= 4.4) & (r > 3.2)] = ST_D; v.g[r <= 1.4] = 0
+    return v
+export("shuriken", shuriken(), 1.6, (15, 1, 15))
+
+def bullet():
+    """원두탄환: 앞이 뾰족한 원두 탄두와 놋쇠색 탄피. 앞(-y)을 향한다."""
+    v = Vox(11, 24, 11)
+    X, Y, Z = v._x, v._y, v._z
+    B = v.color((108, 72, 55)); Dk = v.color((59, 38, 25)); BR = v.color((206, 166, 84)); BR_D = v.color((160, 122, 58))
+    r = np.sqrt((X - 5) ** 2 + (Z - 5) ** 2)
+    v.g[(Y >= 12) & (Y <= 22) & (r <= 4.6)] = BR                         # 탄피
+    v.g[(Y >= 22) & (Y <= 23) & (r <= 5.2)] = BR_D
+    v.g[(Y == 12) & (r <= 4.6)] = BR_D
+    v.g[(Y < 12) & (r <= 4.4 * np.sqrt(np.clip((Y + 0.5) / 12.0, 0, 1)))] = B           # 원두 탄두
+    v.g[(v.g == B) & (np.abs(X - 5) < 0.6) & (Z >= 5)] = Dk              # 원두 홈
+    return v
+export("bullet", bullet(), 2.0, (5, 12, 5))
+
+def fedora():
+    """중절모: 넓은 챙, 띠, 가운데가 눌린 꼭대기."""
+    v = Vox(31, 27, 13)
+    X, Y, Z = v._x, v._y, v._z
+    F = v.color((74, 70, 80)); F_D = v.color((54, 50, 60)); BAND = v.color((34, 30, 38)); F_L = v.color((96, 92, 104))
+    cx, cy = 15, 13
+    e = ((X - cx) / 15.0) ** 2 + ((Y - cy) / 12.6) ** 2
+    v.g[(Z == 1) & (e <= 1)] = F                                          # 챙
+    v.g[(Z == 0) & (e <= 0.86)] = F_D
+    v.g[(Z == 2) & (e <= 1) & (e > 0.8)] = F                              # 챙 끝이 살짝 말림
+    for z in range(2, 12):                                               # 모자 몸통
+        k = 1 - (z - 2) * 0.022
+        m = (((X - cx) / (8.6 * k)) ** 2 + ((Y - cy) / (7.4 * k)) ** 2 <= 1) & (Z == z)
+        v.g[m] = BAND if z in (2, 3) else (F_L if z >= 10 else F)
+    v.g[(Z >= 10) & (np.abs(X - cx) <= 1.6) & (np.abs(Y - cy) <= 5.0)] = 0     # 꼭대기 눌린 골
+    v.g[(Z == 9) & (np.abs(X - cx) <= 1.6) & (np.abs(Y - cy) <= 5.0)] = F_D
+    return v
+export("fedora", fedora(), 2.6, (15, 13, 5))
+
 json.dump(META, open("meta.json", "w"), indent=1)
 print(json.dumps(META))
 
@@ -287,3 +389,9 @@ if __name__ == "__main__":
         f = render(s_, ang, spread=1, squash=0.5, shade=0.12); f = f.resize((f.width * 4, f.height * 4), Image.NEAREST)
         b.alpha_composite(f, (10 + i * 270, 10))
     b.save("build_prev.png")
+    t = Image.new("RGBA", (1250, 330), (250, 244, 236, 255))
+    for i, (nm, z, sq) in enumerate((("badbean", 9, 0.6), ("decaf", 9, 0.5), ("shuriken", 7, 0.3), ("bullet", 8, 0.6), ("fedora", 7, 0.5))):
+        s_ = load_strip(nm + "_strip.png", META[nm]["h"])
+        f = render(s_, 215, spread=1, squash=sq, shade=0.15); f = f.resize((f.width * z, f.height * z), Image.NEAREST)
+        t.alpha_composite(f, (10 + i * 248, 10))
+    t.save("targets_prev.png")
